@@ -8,8 +8,20 @@ using Flights_Work_Order_APIs.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<FlightWorkOrderContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Use SQLite for demo/testing purposes, MSSQL for production
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (builder.Environment.IsDevelopment() || string.IsNullOrEmpty(connectionString))
+{
+    // Use SQLite for development/testing
+    builder.Services.AddDbContext<FlightWorkOrderContext>(options =>
+        options.UseSqlite("Data Source=FlightWorkOrder.db"));
+}
+else
+{
+    // Use MSSQL for production
+    builder.Services.AddDbContext<FlightWorkOrderContext>(options =>
+        options.UseSqlServer(connectionString));
+}
 
 // JWT Authentication Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
