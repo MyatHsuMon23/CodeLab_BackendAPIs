@@ -17,6 +17,32 @@ namespace Flights_Work_Order_APIs.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
+
+    public class ImportFlightDto
+    {
+        [Required]
+        [StringLength(10)]
+        public string FlightNumber { get; set; } = string.Empty;
+        
+        [Required]
+        public DateTime ScheduledArrivalTimeUtc { get; set; }
+        
+        [Required]
+        [StringLength(100)]
+        public string OriginAirport { get; set; } = string.Empty;
+        
+        [Required]
+        [StringLength(100)]
+        public string DestinationAirport { get; set; } = string.Empty;
+    }
+
+    public class ImportResultDto
+    {
+        public int SuccessCount { get; set; }
+        public int FailureCount { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
+        public List<FlightDto> ImportedFlights { get; set; } = new List<FlightDto>();
+    }
     
     public class CreateFlightDto
     {
