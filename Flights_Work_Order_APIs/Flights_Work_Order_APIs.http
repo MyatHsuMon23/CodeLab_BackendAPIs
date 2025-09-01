@@ -1,0 +1,6 @@
+@Flights_Work_Order_APIs_HostAddress = http://localhost:5112
+
+GET {{Flights_Work_Order_APIs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
