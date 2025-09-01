@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Flights_Work_Order_APIs")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+59e6f32e96f6ab62d029468de553d5a14c291a62")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8ba9e9ac789dd51a1e365c068d955f6708326d79")]
 [assembly: System.Reflection.AssemblyProductAttribute("Flights_Work_Order_APIs")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Flights_Work_Order_APIs")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
