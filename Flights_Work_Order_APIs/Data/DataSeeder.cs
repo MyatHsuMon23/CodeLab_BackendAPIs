@@ -1,4 +1,5 @@
 using Flights_Work_Order_APIs.Models;
+using Flights_Work_Order_APIs.Controllers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flights_Work_Order_APIs.Data
@@ -7,14 +8,37 @@ namespace Flights_Work_Order_APIs.Data
     {
         public static async Task SeedDataAsync(FlightWorkOrderContext context)
         {
-            // Ensure the database is created
-            await context.Database.EnsureCreatedAsync();
-
             // Check if data already exists
-            if (await context.Aircraft.AnyAsync())
+            if (await context.Users.AnyAsync())
             {
                 return; // Data already seeded
             }
+
+            // Seed Users first
+            var users = new List<User>
+            {
+                new User
+                {
+                    Username = "admin",
+                    PasswordHash = AuthController.GetHashedPassword("password123"),
+                    FirstName = "Admin",
+                    LastName = "User",
+                    Email = "admin@flightworkorder.com",
+                    IsActive = true
+                },
+                new User
+                {
+                    Username = "manager",
+                    PasswordHash = AuthController.GetHashedPassword("manager123"),
+                    FirstName = "Manager",
+                    LastName = "User",
+                    Email = "manager@flightworkorder.com",
+                    IsActive = true
+                }
+            };
+
+            context.Users.AddRange(users);
+            await context.SaveChangesAsync();
 
             // Seed Aircraft
             var aircraft = new List<Aircraft>

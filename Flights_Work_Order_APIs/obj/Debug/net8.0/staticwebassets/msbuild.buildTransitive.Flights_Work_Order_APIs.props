@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../buildMultiTargeting/Flights_Work_Order_APIs.props" />
-</Project>

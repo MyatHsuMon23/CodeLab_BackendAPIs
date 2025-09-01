@@ -13,6 +13,7 @@ namespace Flights_Work_Order_APIs.Data
         public DbSet<Flight> Flights { get; set; }
         public DbSet<WorkOrder> WorkOrders { get; set; }
         public DbSet<Technician> Technicians { get; set; }
+        public DbSet<User> Users { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -82,6 +83,19 @@ namespace Flights_Work_Order_APIs.Data
                     .HasForeignKey(e => e.AssignedTechnicianId)
                     .OnDelete(DeleteBehavior.SetNull);
             });
+            
+            // User configuration
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.FirstName).HasMaxLength(100);
+                entity.Property(e => e.LastName).HasMaxLength(100);
+                entity.Property(e => e.Email).HasMaxLength(255);
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
+            });
         }
         
         public override int SaveChanges()
@@ -99,7 +113,7 @@ namespace Flights_Work_Order_APIs.Data
         private void UpdateTimestamps()
         {
             var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is Aircraft || e.Entity is Flight || e.Entity is WorkOrder || e.Entity is Technician)
+                .Where(e => e.Entity is Aircraft || e.Entity is Flight || e.Entity is WorkOrder || e.Entity is Technician || e.Entity is User)
                 .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
                 
             foreach (var entry in entries)

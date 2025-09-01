@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Flights_Work_Order_APIs.Data;
 using Flights_Work_Order_APIs.Models;
@@ -8,6 +9,7 @@ namespace Flights_Work_Order_APIs.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class WorkOrdersController : ControllerBase
     {
         private readonly FlightWorkOrderContext _context;
