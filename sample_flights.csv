@@ -1,0 +1,4 @@
+FlightNumber,ScheduledArrivalTimeUtc,OriginAirport,DestinationAirport
+LH404,2024-01-16T09:30:00Z,FRA,JFK
+EK203,2024-01-16T11:45:00Z,DXB,LAX
+AF447,2024-01-16T13:20:00Z,CDG,SFO

@@ -173,6 +173,99 @@ namespace Flights_Work_Order_APIs.Controllers
         }
 
         /// <summary>
+        /// Import flights from CSV data
+        /// </summary>
+        [HttpPost("import/csv")]
+        public async Task<ActionResult<ApiResponse<object>>> ImportFlightsFromCsv([FromBody] string csvData)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(csvData))
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("CSV data is required"));
+                }
+
+                var lines = csvData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                if (lines.Length < 2)
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("CSV must contain header and at least one data row"));
+                }
+
+                var importedCount = 0;
+                var errors = new List<string>();
+
+                // Skip header row
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    var line = lines[i].Trim();
+                    if (string.IsNullOrEmpty(line)) continue;
+
+                    try
+                    {
+                        var parts = line.Split(',');
+                        if (parts.Length != 4)
+                        {
+                            errors.Add($"Line {i + 1}: Invalid CSV format, expected 4 columns");
+                            continue;
+                        }
+
+                        var flightNumber = parts[0].Trim();
+                        var scheduledArrivalStr = parts[1].Trim();
+                        var originAirport = parts[2].Trim();
+                        var destinationAirport = parts[3].Trim();
+
+                        if (!DateTime.TryParse(scheduledArrivalStr, out var scheduledArrival))
+                        {
+                            errors.Add($"Line {i + 1}: Invalid date format for {flightNumber}");
+                            continue;
+                        }
+
+                        // Check if flight already exists
+                        var existingFlight = await _context.Flights
+                            .FirstOrDefaultAsync(f => f.FlightNumber == flightNumber);
+
+                        if (existingFlight != null)
+                        {
+                            errors.Add($"Flight {flightNumber} already exists");
+                            continue;
+                        }
+
+                        var flight = new Flight
+                        {
+                            FlightNumber = flightNumber,
+                            ScheduledArrivalTimeUtc = scheduledArrival,
+                            OriginAirport = originAirport,
+                            DestinationAirport = destinationAirport
+                        };
+
+                        _context.Flights.Add(flight);
+                        importedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"Line {i + 1}: Error processing line - {ex.Message}");
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                var result = new
+                {
+                    ImportedCount = importedCount,
+                    Errors = errors
+                };
+
+                _logger.LogInformation("Imported {ImportedCount} flights from CSV with {ErrorCount} errors", importedCount, errors.Count);
+                return Ok(ApiResponse<object>.CreateSuccess(result, $"CSV import completed: {importedCount} flights imported"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error importing flights from CSV");
+                return StatusCode(500, ApiResponse<object>.CreateError("Failed to import flights from CSV"));
+            }
+        }
+
+        /// <summary>
         /// Submit work order command for a flight
         /// </summary>
         [HttpPost("{flightId}/commands")]
