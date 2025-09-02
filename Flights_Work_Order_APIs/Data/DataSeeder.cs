@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Flights_Work_Order_APIs.Data
 {
-    public static class DataSeeder
+    public class DataSeeder
     {
-        public static async Task SeedDataAsync(FlightWorkOrderContext context)
+        public async Task SeedDataAsync(FlightWorkOrderContext context)
         {
             // Check if data already exists
             if (await context.Users.AnyAsync())
@@ -24,15 +24,6 @@ namespace Flights_Work_Order_APIs.Data
                     FirstName = "Admin",
                     LastName = "User",
                     Email = "admin@flightworkorder.com",
-                    IsActive = true
-                },
-                new User
-                {
-                    Username = "manager",
-                    PasswordHash = AuthController.GetHashedPassword("manager123"),
-                    FirstName = "Manager",
-                    LastName = "User",
-                    Email = "manager@flightworkorder.com",
                     IsActive = true
                 }
             };

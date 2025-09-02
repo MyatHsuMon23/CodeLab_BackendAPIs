@@ -100,22 +100,23 @@ namespace Flights_Work_Order_APIs.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private static string HashPassword(string password)
+        private string HashPassword(string password)
         {
             // Use BCrypt or similar in production
+            var salt = _configuration["JwtSettings:SaltValue"];
             using var sha256 = SHA256.Create();
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password + "FlightWorkOrder_Salt"));
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password + salt));
             return Convert.ToBase64String(hashedBytes);
         }
 
-        private static bool VerifyPassword(string password, string hashedPassword)
+        private bool VerifyPassword(string password, string hashedPassword)
         {
             var hashedInput = HashPassword(password);
             return hashedInput == hashedPassword;
         }
 
         // Helper method to create default user - can be used for seeding
-        public static string GetHashedPassword(string password)
+        public string GetHashedPassword(string password)
         {
             return HashPassword(password);
         }
