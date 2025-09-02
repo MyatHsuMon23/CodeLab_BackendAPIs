@@ -1,0 +1,19 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Flights_Work_Order_APIs/obj/Debug/net8.0/EndpointInfo
+/.vs
+/Flights_Work_Order_APIs
+/Flights_Work_Order_APIs/bin/Debug/net8.0
+/Flights_Work_Order_APIs/obj/Debug/net8.0
+/Flights_Work_Order_APIs/obj/Debug/net8.0/ApiEndpoints.json
+/Flights_Work_Order_APIs/obj/Debug/net8.0/apphost.exe
+/Flights_Work_Order_APIs/obj/Debug/net8.0/Flights_.2BA80DF1.Up2Date
+/Flights_Work_Order_APIs/obj/Debug/net8.0/Flights_Work_Order_APIs.csproj.BuildWithSkipAnalyzers
+/Flights_Work_Order_APIs/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json
+/Flights_Work_Order_APIs/obj/Debug/net8.0/rjsmrazor.dswa.cache.json
+/Flights_Work_Order_APIs/obj/Debug/net8.0/staticwebassets.build.endpoints.json
+/Flights_Work_Order_APIs/obj/Debug/net8.0/staticwebassets.build.json.cache
+/Flights_Work_Order_APIs/obj/Debug/net8.0/staticwebassets.references.upToDateCheck.txt
+/.gitignore
