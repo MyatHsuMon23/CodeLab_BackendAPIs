@@ -5,26 +5,6 @@ This document provides comprehensive examples for testing all API endpoints usin
 
 ## 🔐 Authentication Examples
 
-### Register New User
-```bash
-curl -X POST "http://localhost:5112/api/Auth/register" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john.doe@example.com",
-    "password": "SecurePassword123!",
-    "firstName": "John",
-    "lastName": "Doe"
-  }'
-```
-
-**Expected Response:**
-```json
-{
-  "message": "User registered successfully",
-  "userId": 1
-}
-```
-
 ### Login User
 ```bash
 curl -X POST "http://localhost:5112/api/Auth/login" \
