@@ -1,0 +1,32 @@
+[
+  {
+    "flightNumber": "AA123",
+    "scheduledArrivalTimeUtc": "2024-01-15T14:30:00Z",
+    "originAirport": "JFK",
+    "destinationAirport": "LAX"
+  },
+  {
+    "flightNumber": "BA456",
+    "scheduledArrivalTimeUtc": "2024-01-15T16:45:00Z",
+    "originAirport": "LHR",
+    "destinationAirport": "JFK"
+  },
+  {
+    "flightNumber": "UA789",
+    "scheduledArrivalTimeUtc": "2024-01-15T18:20:00Z",
+    "originAirport": "SFO",
+    "destinationAirport": "ORD"
+  },
+  {
+    "flightNumber": "DL101",
+    "scheduledArrivalTimeUtc": "2024-01-15T20:15:00Z",
+    "originAirport": "ATL",
+    "destinationAirport": "MIA"
+  },
+  {
+    "flightNumber": "SW202",
+    "scheduledArrivalTimeUtc": "2024-01-15T22:30:00Z",
+    "originAirport": "DEN",
+    "destinationAirport": "PHX"
+  }
+]

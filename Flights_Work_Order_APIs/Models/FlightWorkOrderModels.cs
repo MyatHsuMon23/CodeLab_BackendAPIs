@@ -104,4 +104,106 @@ namespace Flights_Work_Order_APIs.Models
         public string SerialNumber { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
     }
+
+    /// <summary>
+    /// Flight model
+    /// </summary>
+    public class Flight
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [MaxLength(20)]
+        public string FlightNumber { get; set; } = string.Empty;
+
+        public DateTime ScheduledArrivalTimeUtc { get; set; }
+
+        [Required]
+        [MaxLength(10)]
+        public string OriginAirport { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(10)]
+        public string DestinationAirport { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation property for flight work orders
+        public virtual ICollection<FlightWorkOrderSubmission> WorkOrderSubmissions { get; set; } = new List<FlightWorkOrderSubmission>();
+    }
+
+    /// <summary>
+    /// Flight work order submission model - links flights to work order commands
+    /// </summary>
+    public class FlightWorkOrderSubmission
+    {
+        public int Id { get; set; }
+
+        public int FlightId { get; set; }
+        public virtual Flight Flight { get; set; } = null!;
+
+        [Required]
+        [MaxLength(500)]
+        public string CommandString { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(1000)]
+        public string ParsedCommandsJson { get; set; } = string.Empty;
+
+        public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+
+        [MaxLength(100)]
+        public string SubmittedBy { get; set; } = string.Empty;
+
+        [MaxLength(1000)]
+        public string? Notes { get; set; }
+    }
+
+    /// <summary>
+    /// Parsed flight command model for command validation and display
+    /// </summary>
+    public class FlightCommand
+    {
+        public string Type { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string DisplayText { get; set; } = string.Empty;
+        public bool IsValid { get; set; } = true;
+        public string? ErrorMessage { get; set; }
+    }
+
+    /// <summary>
+    /// Command submission request model
+    /// </summary>
+    public class SubmitFlightCommandRequest
+    {
+        [Required]
+        public int FlightId { get; set; }
+
+        [Required]
+        [MaxLength(500)]
+        public string CommandString { get; set; } = string.Empty;
+
+        [MaxLength(1000)]
+        public string? Notes { get; set; }
+    }
+
+    /// <summary>
+    /// Flight import request model
+    /// </summary>
+    public class FlightImportRequest
+    {
+        [Required]
+        [MaxLength(20)]
+        public string FlightNumber { get; set; } = string.Empty;
+
+        public DateTime ScheduledArrivalTimeUtc { get; set; }
+
+        [Required]
+        [MaxLength(10)]
+        public string OriginAirport { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(10)]
+        public string DestinationAirport { get; set; } = string.Empty;
+    }
 }
