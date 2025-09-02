@@ -163,23 +163,29 @@ The WorkOrder API integrates with the Flight API through:
 ## Usage Examples
 
 ### Example 1: Get First Page of Work Orders
-```
+```bash
 GET /api/WorkOrders?page=1&perPage=5
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### Example 2: Filter by Status with Pagination
-```
+```bash
 GET /api/WorkOrders?status=Open&page=1&perPage=10
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### Example 3: Search by Aircraft Registration
-```
+```bash
 GET /api/WorkOrders?aircraftRegistration=N123&page=1&perPage=20
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### Example 4: Create High Priority Work Order
-```
+```bash
 POST /api/WorkOrders
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
 {
   "aircraftRegistration": "N123AB",
   "taskDescription": "Emergency brake system inspection",
@@ -187,6 +193,31 @@ POST /api/WorkOrders
   "assignedTechnician": "Jane Smith",
   "scheduledDate": "2024-12-01T14:00:00Z"
 }
+```
+
+### Example 5: Update Work Order Status
+```bash
+PUT /api/WorkOrders/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "id": 1,
+  "workOrderNumber": "WO-20241201-001",
+  "aircraftRegistration": "N123AB",
+  "taskDescription": "Emergency brake system inspection",
+  "status": "InProgress",
+  "priority": "Critical",
+  "assignedTechnician": "Jane Smith",
+  "scheduledDate": "2024-12-01T14:00:00Z",
+  "notes": "Started brake inspection - initial findings normal"
+}
+```
+
+### Example 6: Get Work Order Statistics
+```bash
+GET /api/WorkOrders/statistics
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ## Error Handling
