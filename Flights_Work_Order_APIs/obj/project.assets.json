@@ -452,11 +452,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/runner/work/Flights-WorkOrders_BackendAPIs/Flights-WorkOrders_BackendAPIs/Flights_Work_Order_APIs/Flights_Work_Order_APIs.csproj",
+      "projectUniqueName": "/home/runner/work/CodeLab_BackendAPIs/CodeLab_BackendAPIs/Flights_Work_Order_APIs/Flights_Work_Order_APIs.csproj",
       "projectName": "Flights_Work_Order_APIs",
-      "projectPath": "/home/runner/work/Flights-WorkOrders_BackendAPIs/Flights-WorkOrders_BackendAPIs/Flights_Work_Order_APIs/Flights_Work_Order_APIs.csproj",
+      "projectPath": "/home/runner/work/CodeLab_BackendAPIs/CodeLab_BackendAPIs/Flights_Work_Order_APIs/Flights_Work_Order_APIs.csproj",
       "packagesPath": "/home/runner/.nuget/packages/",
-      "outputPath": "/home/runner/work/Flights-WorkOrders_BackendAPIs/Flights-WorkOrders_BackendAPIs/Flights_Work_Order_APIs/obj/",
+      "outputPath": "/home/runner/work/CodeLab_BackendAPIs/CodeLab_BackendAPIs/Flights_Work_Order_APIs/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/runner/.nuget/NuGet/NuGet.Config"
