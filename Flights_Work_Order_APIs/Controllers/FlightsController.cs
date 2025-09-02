@@ -173,95 +173,70 @@ namespace Flights_Work_Order_APIs.Controllers
         }
 
         /// <summary>
-        /// Import flights from CSV data
+        /// Import flights from CSV or JSON file
         /// </summary>
         [HttpPost("import/csv")]
-        public async Task<ActionResult<ApiResponse<object>>> ImportFlightsFromCsv([FromBody] string csvData)
+        public async Task<ActionResult<ApiResponse<object>>> ImportFlightsFromCsv(IFormFile file)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(csvData))
+                if (file == null || file.Length == 0)
                 {
-                    return BadRequest(ApiResponse<object>.CreateError("CSV data is required"));
+                    return BadRequest(ApiResponse<object>.CreateError("File is required"));
                 }
 
-                var lines = csvData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                if (lines.Length < 2)
+                // Validate file type
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (fileExtension != ".csv" && fileExtension != ".json")
                 {
-                    return BadRequest(ApiResponse<object>.CreateError("CSV must contain header and at least one data row"));
+                    return BadRequest(ApiResponse<object>.CreateError("Only CSV and JSON files are supported"));
+                }
+
+                string fileContent;
+                using (var reader = new StreamReader(file.OpenReadStream()))
+                {
+                    fileContent = await reader.ReadToEndAsync();
+                }
+
+                if (string.IsNullOrWhiteSpace(fileContent))
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("File content is empty"));
                 }
 
                 var importedCount = 0;
                 var errors = new List<string>();
 
-                // Skip header row
-                for (int i = 1; i < lines.Length; i++)
+                if (fileExtension == ".csv")
                 {
-                    var line = lines[i].Trim();
-                    if (string.IsNullOrEmpty(line)) continue;
-
-                    try
-                    {
-                        var parts = line.Split(',');
-                        if (parts.Length != 4)
-                        {
-                            errors.Add($"Line {i + 1}: Invalid CSV format, expected 4 columns");
-                            continue;
-                        }
-
-                        var flightNumber = parts[0].Trim();
-                        var scheduledArrivalStr = parts[1].Trim();
-                        var originAirport = parts[2].Trim();
-                        var destinationAirport = parts[3].Trim();
-
-                        if (!DateTime.TryParse(scheduledArrivalStr, out var scheduledArrival))
-                        {
-                            errors.Add($"Line {i + 1}: Invalid date format for {flightNumber}");
-                            continue;
-                        }
-
-                        // Check if flight already exists
-                        var existingFlight = await _context.Flights
-                            .FirstOrDefaultAsync(f => f.FlightNumber == flightNumber);
-
-                        if (existingFlight != null)
-                        {
-                            errors.Add($"Flight {flightNumber} already exists");
-                            continue;
-                        }
-
-                        var flight = new Flight
-                        {
-                            FlightNumber = flightNumber,
-                            ScheduledArrivalTimeUtc = scheduledArrival,
-                            OriginAirport = originAirport,
-                            DestinationAirport = destinationAirport
-                        };
-
-                        _context.Flights.Add(flight);
-                        importedCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        errors.Add($"Line {i + 1}: Error processing line - {ex.Message}");
-                    }
+                    // Process CSV file
+                    var result = await ProcessCsvContent(fileContent);
+                    importedCount = result.ImportedCount;
+                    errors = result.Errors;
+                }
+                else if (fileExtension == ".json")
+                {
+                    // Process JSON file
+                    var result = await ProcessJsonContent(fileContent);
+                    importedCount = result.ImportedCount;
+                    errors = result.Errors;
                 }
 
                 await _context.SaveChangesAsync();
 
-                var result = new
+                var resultObj = new
                 {
                     ImportedCount = importedCount,
                     Errors = errors
                 };
 
-                _logger.LogInformation("Imported {ImportedCount} flights from CSV with {ErrorCount} errors", importedCount, errors.Count);
-                return Ok(ApiResponse<object>.CreateSuccess(result, $"CSV import completed: {importedCount} flights imported"));
+                _logger.LogInformation("Imported {ImportedCount} flights from {FileType} with {ErrorCount} errors", 
+                    importedCount, fileExtension.ToUpper(), errors.Count);
+                return Ok(ApiResponse<object>.CreateSuccess(resultObj, $"File import completed: {importedCount} flights imported"));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error importing flights from CSV");
-                return StatusCode(500, ApiResponse<object>.CreateError("Failed to import flights from CSV"));
+                _logger.LogError(ex, "Error importing flights from file");
+                return StatusCode(500, ApiResponse<object>.CreateError("Failed to import flights from file"));
             }
         }
 
@@ -395,6 +370,160 @@ namespace Flights_Work_Order_APIs.Controllers
                 _logger.LogError(ex, "Error validating command: {CommandString}", commandString);
                 return StatusCode(500, ApiResponse<object>.CreateError("Failed to validate command"));
             }
+        }
+
+        /// <summary>
+        /// Process CSV file content and return import results
+        /// </summary>
+        private async Task<(int ImportedCount, List<string> Errors)> ProcessCsvContent(string csvContent)
+        {
+            var importedCount = 0;
+            var errors = new List<string>();
+
+            var lines = csvContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            if (lines.Length < 2)
+            {
+                errors.Add("CSV must contain header and at least one data row");
+                return (importedCount, errors);
+            }
+
+            // Skip header row
+            for (int i = 1; i < lines.Length; i++)
+            {
+                var line = lines[i].Trim();
+                if (string.IsNullOrEmpty(line)) continue;
+
+                try
+                {
+                    var parts = line.Split(',');
+                    if (parts.Length != 4)
+                    {
+                        errors.Add($"Line {i + 1}: Invalid CSV format, expected 4 columns");
+                        continue;
+                    }
+
+                    var flightNumber = parts[0].Trim();
+                    var scheduledArrivalStr = parts[1].Trim();
+                    var originAirport = parts[2].Trim();
+                    var destinationAirport = parts[3].Trim();
+
+                    if (!DateTime.TryParse(scheduledArrivalStr, out var scheduledArrival))
+                    {
+                        errors.Add($"Line {i + 1}: Invalid date format for {flightNumber}");
+                        continue;
+                    }
+
+                    // Check if flight already exists
+                    var existingFlight = await _context.Flights
+                        .FirstOrDefaultAsync(f => f.FlightNumber == flightNumber);
+
+                    if (existingFlight != null)
+                    {
+                        errors.Add($"Flight {flightNumber} already exists");
+                        continue;
+                    }
+
+                    var flight = new Flight
+                    {
+                        FlightNumber = flightNumber,
+                        ScheduledArrivalTimeUtc = scheduledArrival,
+                        OriginAirport = originAirport,
+                        DestinationAirport = destinationAirport
+                    };
+
+                    _context.Flights.Add(flight);
+                    importedCount++;
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Line {i + 1}: Error processing line - {ex.Message}");
+                }
+            }
+
+            return (importedCount, errors);
+        }
+
+        /// <summary>
+        /// Process JSON file content and return import results
+        /// </summary>
+        private async Task<(int ImportedCount, List<string> Errors)> ProcessJsonContent(string jsonContent)
+        {
+            var importedCount = 0;
+            var errors = new List<string>();
+
+            try
+            {
+                var flightImports = JsonSerializer.Deserialize<FlightImportRequest[]>(jsonContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (flightImports == null || flightImports.Length == 0)
+                {
+                    errors.Add("JSON file contains no flight data or is invalid");
+                    return (importedCount, errors);
+                }
+
+                for (int i = 0; i < flightImports.Length; i++)
+                {
+                    var flightImport = flightImports[i];
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(flightImport.FlightNumber))
+                        {
+                            errors.Add($"Flight {i + 1}: Flight number is required");
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(flightImport.OriginAirport))
+                        {
+                            errors.Add($"Flight {i + 1}: Origin airport is required");
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(flightImport.DestinationAirport))
+                        {
+                            errors.Add($"Flight {i + 1}: Destination airport is required");
+                            continue;
+                        }
+
+                        // Check if flight already exists
+                        var existingFlight = await _context.Flights
+                            .FirstOrDefaultAsync(f => f.FlightNumber == flightImport.FlightNumber);
+
+                        if (existingFlight != null)
+                        {
+                            errors.Add($"Flight {flightImport.FlightNumber} already exists");
+                            continue;
+                        }
+
+                        var flight = new Flight
+                        {
+                            FlightNumber = flightImport.FlightNumber,
+                            ScheduledArrivalTimeUtc = flightImport.ScheduledArrivalTimeUtc,
+                            OriginAirport = flightImport.OriginAirport,
+                            DestinationAirport = flightImport.DestinationAirport
+                        };
+
+                        _context.Flights.Add(flight);
+                        importedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"Flight {i + 1}: Error processing flight - {ex.Message}");
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                errors.Add($"Invalid JSON format: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"Error processing JSON file: {ex.Message}");
+            }
+
+            return (importedCount, errors);
         }
     }
 }
