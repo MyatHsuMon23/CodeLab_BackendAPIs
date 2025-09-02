@@ -31,31 +31,63 @@ namespace Flights_Work_Order_APIs.Controllers
         }
 
         /// <summary>
-        /// Get all work orders
+        /// Get all work orders with optional pagination, filtering and sorting
         /// </summary>
         [HttpGet]
-        public ActionResult<ApiResponse<IEnumerable<FlightWorkOrder>>> GetWorkOrders(
+        public ActionResult<PaginatedApiResponse<IEnumerable<FlightWorkOrder>>> GetWorkOrders(
             [FromQuery] WorkOrderStatus? status = null,
-            [FromQuery] string? aircraftRegistration = null)
+            [FromQuery] string? aircraftRegistration = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int perPage = 10)
         {
             try
             {
+                // Validate pagination parameters
+                if (page < 1) page = 1;
+                if (perPage < 1) perPage = 10;
+                if (perPage > 100) perPage = 100; // Limit maximum page size
+
                 var query = _workOrders.AsQueryable();
 
+                // Apply filtering
                 if (status.HasValue)
                     query = query.Where(w => w.Status == status.Value);
 
                 if (!string.IsNullOrEmpty(aircraftRegistration))
                     query = query.Where(w => w.AircraftRegistration.Contains(aircraftRegistration, StringComparison.OrdinalIgnoreCase));
 
-                var workOrders = query.OrderByDescending(w => w.CreatedDate).ToList();
+                // Apply sorting
+                query = query.OrderByDescending(w => w.CreatedDate);
 
-                return Ok(ApiResponse<IEnumerable<FlightWorkOrder>>.CreateSuccess(workOrders, "Work orders retrieved successfully"));
+                // Get total count before pagination
+                var total = query.Count();
+
+                // Calculate pagination values
+                var lastPage = (int)Math.Ceiling((double)total / perPage);
+                var skip = (page - 1) * perPage;
+                var from = total > 0 ? skip + 1 : 0;
+                var to = Math.Min(skip + perPage, total);
+
+                // Apply pagination
+                var workOrders = query.Skip(skip).Take(perPage).ToList();
+
+                // Create pagination metadata
+                var pagination = new Pagination
+                {
+                    CurrentPage = page,
+                    From = from,
+                    To = to,
+                    LastPage = lastPage,
+                    PerPage = perPage,
+                    Total = total
+                };
+
+                return Ok(PaginatedApiResponse<IEnumerable<FlightWorkOrder>>.CreateSuccess(workOrders, pagination, "Work orders retrieved successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving work orders");
-                return StatusCode(500, ApiResponse<IEnumerable<FlightWorkOrder>>.CreateError("Failed to retrieve work orders"));
+                return StatusCode(500, PaginatedApiResponse<IEnumerable<FlightWorkOrder>>.CreateError("Failed to retrieve work orders"));
             }
         }
 
