@@ -31,16 +31,23 @@ namespace Flights_Work_Order_APIs.Controllers
         }
 
         /// <summary>
-        /// Get all flights with optional filtering and sorting
+        /// Get all flights with optional filtering, sorting and pagination
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<IEnumerable<Flight>>>> GetFlights(
+        public async Task<ActionResult<PaginatedApiResponse<IEnumerable<Flight>>>> GetFlights(
             [FromQuery] string? flightNumber = null,
             [FromQuery] string? sortBy = "FlightNumber",
-            [FromQuery] bool sortDescending = false)
+            [FromQuery] bool sortDescending = false,
+            [FromQuery] int page = 1,
+            [FromQuery] int perPage = 10)
         {
             try
             {
+                // Validate pagination parameters
+                if (page < 1) page = 1;
+                if (perPage < 1) perPage = 10;
+                if (perPage > 100) perPage = 100; // Limit maximum page size
+
                 var query = _context.Flights.AsQueryable();
 
                 // Apply filtering
@@ -70,14 +77,35 @@ namespace Flights_Work_Order_APIs.Controllers
                         break;
                 }
 
-                var flights = await query.ToListAsync();
+                // Get total count before pagination
+                var total = await query.CountAsync();
 
-                return Ok(ApiResponse<IEnumerable<Flight>>.CreateSuccess(flights, "Flights retrieved successfully"));
+                // Calculate pagination values
+                var lastPage = (int)Math.Ceiling((double)total / perPage);
+                var skip = (page - 1) * perPage;
+                var from = total > 0 ? skip + 1 : 0;
+                var to = Math.Min(skip + perPage, total);
+
+                // Apply pagination
+                var flights = await query.Skip(skip).Take(perPage).ToListAsync();
+
+                // Create pagination metadata
+                var pagination = new Pagination
+                {
+                    CurrentPage = page,
+                    From = from,
+                    To = to,
+                    LastPage = lastPage,
+                    PerPage = perPage,
+                    Total = total
+                };
+
+                return Ok(PaginatedApiResponse<IEnumerable<Flight>>.CreateSuccess(flights, pagination, "Flights retrieved successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving flights");
-                return StatusCode(500, ApiResponse<IEnumerable<Flight>>.CreateError("Failed to retrieve flights"));
+                return StatusCode(500, PaginatedApiResponse<IEnumerable<Flight>>.CreateError("Failed to retrieve flights"));
             }
         }
 
