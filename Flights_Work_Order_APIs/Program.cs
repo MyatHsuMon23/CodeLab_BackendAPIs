@@ -130,7 +130,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Flight Work Order APIs v1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
+        c.RoutePrefix = "swagger"; // Set Swagger UI at /swagger path
     });
 }
 
