@@ -30,27 +30,17 @@ Once the app starts (you'll see `Now listening on: http://localhost:5112`):
 - Click `GET /api/Technicians` → Try it out → Execute
 
 ### 3. Test Authentication
-1. **Register**: `POST /api/Auth/register`
+1. **Login**: `POST /api/Auth/login`
    ```json
    {
-     "email": "test@example.com",
-     "password": "TestPassword123!",
-     "firstName": "John",
-     "lastName": "Doe"
+     "email": "admin",
+     "password": "password123"
    }
    ```
 
-2. **Login**: `POST /api/Auth/login`
-   ```json
-   {
-     "email": "test@example.com",
-     "password": "TestPassword123!"
-   }
-   ```
+2. **Authorize**: Copy token → Click "Authorize" button → Paste token
 
-3. **Authorize**: Copy token → Click "Authorize" button → Paste token
-
-4. **Test Protected Endpoint**: `POST /api/Aircraft` (create new aircraft)
+3. **Test Protected Endpoint**: `POST /api/Aircraft` (create new aircraft)
 
 ## 🔧 Development Mode
 
