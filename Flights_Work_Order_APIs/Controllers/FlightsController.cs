@@ -289,7 +289,13 @@ namespace Flights_Work_Order_APIs.Controllers
                 var isValid = _commandService.ValidateCommands(parsedCommands);
                 var humanReadable = _commandService.ConvertToHumanReadable(parsedCommands);
 
-                // Create submission record
+                // If commands are invalid, return error without saving
+                if (!isValid)
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("Invalid command string"));
+                }
+
+                // Create submission record only if commands are valid
                 var submission = new FlightWorkOrderSubmission
                 {
                     FlightId = flightId,
@@ -368,33 +374,74 @@ namespace Flights_Work_Order_APIs.Controllers
         }
 
         /// <summary>
-        /// Parse and validate command string without submitting
+        /// Create a work order for a specific flight
         /// </summary>
-        [HttpPost("commands/validate")]
-        public ActionResult<ApiResponse<object>> ValidateCommand([FromBody] string commandString)
+        [HttpPost("{flightId}/work-orders")]
+        public async Task<ActionResult<ApiResponse<object>>> CreateFlightWorkOrder(int flightId, [FromBody] CreateFlightWorkOrderRequest request)
         {
             try
             {
-                var parsedCommands = _commandService.ParseCommands(commandString);
-                var isValid = _commandService.ValidateCommands(parsedCommands);
-                var humanReadable = _commandService.ConvertToHumanReadable(parsedCommands);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("Invalid work order data"));
+                }
+
+                // Verify flight exists
+                var flight = await _context.Flights.FindAsync(flightId);
+                if (flight == null)
+                {
+                    return NotFound(ApiResponse<object>.CreateError("Flight not found"));
+                }
+
+                // Create work order linked to flight
+                var workOrderNumber = GenerateWorkOrderNumber();
+                var workOrder = new FlightWorkOrder
+                {
+                    WorkOrderNumber = workOrderNumber,
+                    AircraftRegistration = request.AircraftRegistration,
+                    TaskDescription = $"Flight {flight.FlightNumber}: {request.TaskDescription}",
+                    Priority = request.Priority,
+                    AssignedTechnician = request.AssignedTechnician ?? string.Empty,
+                    ScheduledDate = request.ScheduledDate,
+                    Notes = $"Created for flight {flight.FlightNumber}. {request.Notes}",
+                    CreatedBy = User.Identity?.Name ?? "Unknown",
+                    Status = WorkOrderStatus.Open
+                };
+
+                _context.WorkOrders.Add(workOrder);
+                await _context.SaveChangesAsync();
 
                 var result = new
                 {
-                    CommandString = commandString,
-                    IsValid = isValid,
-                    ParsedCommands = parsedCommands,
-                    HumanReadableCommands = humanReadable
+                    WorkOrderId = workOrder.Id,
+                    WorkOrderNumber = workOrder.WorkOrderNumber,
+                    FlightId = flightId,
+                    FlightNumber = flight.FlightNumber,
+                    TaskDescription = workOrder.TaskDescription,
+                    Priority = workOrder.Priority,
+                    Status = workOrder.Status,
+                    CreatedBy = workOrder.CreatedBy,
+                    CreatedDate = workOrder.CreatedDate
                 };
 
-                return Ok(ApiResponse<object>.CreateSuccess(result, "Command validated successfully"));
+                _logger.LogInformation("Work order {WorkOrderNumber} created for flight {FlightNumber}", workOrderNumber, flight.FlightNumber);
+                return Ok(ApiResponse<object>.CreateSuccess(result, "Work order created for flight successfully"));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating command: {CommandString}", commandString);
-                return StatusCode(500, ApiResponse<object>.CreateError("Failed to validate command"));
+                _logger.LogError(ex, "Error creating work order for flight {FlightId}", flightId);
+                return StatusCode(500, ApiResponse<object>.CreateError("Failed to create work order for flight"));
             }
         }
+
+        private string GenerateWorkOrderNumber()
+        {
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            var random = new Random().Next(100, 999);
+            return $"WO-{timestamp}-{random}";
+        }
+
+
 
         /// <summary>
         /// Process CSV file content and return import results
