@@ -65,14 +65,15 @@ Manages flight data, imports, and operational commands.
 - `GET /api/Flights/{id}` - Get specific flight
 - `POST /api/Flights/import` - Import flights from JSON
 - `POST /api/Flights/import/csv` - Import flights from CSV file
-- `POST /api/Flights/{flightId}/commands` - Add flight commands
+- `POST /api/Flights/{flightId}/commands` - Add flight commands (with validation)
 - `GET /api/Flights/{flightId}/commands` - Get flight commands
-- `POST /api/Flights/commands/validate` - Validate flight commands
+- `POST /api/Flights/{flightId}/work-orders` - Create work order for flight
 
 **Key Features:**
 - Advanced filtering and sorting
 - Bulk import capabilities (CSV/JSON)
-- Flight command management
+- Flight command management with validation
+- Flight-work order integration
 - Pagination support
 
 ### 🔧 Work Orders API (`/api/WorkOrders`)

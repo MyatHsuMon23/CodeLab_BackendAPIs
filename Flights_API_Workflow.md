@@ -142,15 +142,23 @@ AA456,2024-12-01T16:00:00Z,ORD,MIA
 **Path Parameters:**
 - `flightId` (required): Flight ID
 
-### 7. Validate Command
-**Endpoint:** `POST /api/Flights/commands/validate`
+### 7. Create Work Order for Flight
+**Endpoint:** `POST /api/Flights/{flightId}/work-orders`
 
-**Description:** Validates a flight command before execution.
+**Description:** Creates a work order linked to a specific flight.
+
+**Path Parameters:**
+- `flightId` (required): Flight ID
 
 **Request Body:**
 ```json
 {
-  "commandString": "CHANGE_GATE A15"
+  "aircraftRegistration": "N123AB",
+  "taskDescription": "Engine maintenance",
+  "priority": 1,
+  "assignedTechnician": "John Smith",
+  "scheduledDate": "2023-12-15T10:00:00Z",
+  "notes": "Routine maintenance"
 }
 ```
 
@@ -177,11 +185,12 @@ AA456,2024-12-01T16:00:00Z,ORD,MIA
 
 ### 3. Flight Command Management Flow
 ```
-1. Validate command → POST /api/Flights/commands/validate
-2. If valid, add to flight → POST /api/Flights/{flightId}/commands
-3. System processes command
-4. Command stored with flight record
+1. Submit command to flight → POST /api/Flights/{flightId}/commands
+2. System validates command before processing
+3. If invalid, returns error without saving
+4. If valid, command stored with flight record
 5. Retrieve commands → GET /api/Flights/{flightId}/commands
+6. Create work order for flight → POST /api/Flights/{flightId}/work-orders
 ```
 
 ## Data Validation Rules

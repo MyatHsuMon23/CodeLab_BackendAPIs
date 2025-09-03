@@ -206,4 +206,28 @@ namespace Flights_Work_Order_APIs.Models
         [MaxLength(10)]
         public string DestinationAirport { get; set; } = string.Empty;
     }
+
+    /// <summary>
+    /// Create flight work order request model
+    /// </summary>
+    public class CreateFlightWorkOrderRequest
+    {
+        [Required]
+        [MaxLength(50)]
+        public string AircraftRegistration { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(500)]
+        public string TaskDescription { get; set; } = string.Empty;
+
+        public WorkOrderPriority Priority { get; set; } = WorkOrderPriority.Medium;
+
+        [MaxLength(100)]
+        public string? AssignedTechnician { get; set; }
+
+        public DateTime? ScheduledDate { get; set; }
+
+        [MaxLength(1000)]
+        public string? Notes { get; set; }
+    }
 }
