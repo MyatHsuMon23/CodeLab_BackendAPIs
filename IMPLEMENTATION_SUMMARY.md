@@ -9,8 +9,6 @@ The following pagination response structure was implemented exactly as specified
 {
   "pagination": {
     "currentPage": number,
-    "from": number,
-    "to": number,
     "lastPage": number,
     "perPage": number,
     "total": number
@@ -57,8 +55,6 @@ The following pagination response structure was implemented exactly as specified
 - **Mathematical Calculations**:
   - `lastPage = Math.Ceiling(total / perPage)`
   - `skip = (page - 1) * perPage`
-  - `from = total > 0 ? skip + 1 : 0`
-  - `to = Math.Min(skip + perPage, total)`
 - **Query Application**: `.Skip(skip).Take(perPage)`
 
 ### 5. Response Format Examples
@@ -89,8 +85,6 @@ GET /api/WorkOrders?page=1&perPage=5
   ],
   "pagination": {
     "currentPage": 1,
-    "from": 1,
-    "to": 5,
     "lastPage": 10,
     "perPage": 5,
     "total": 47
@@ -109,8 +103,6 @@ GET /api/Flights?flightNumber=UA&page=2&perPage=10
   "data": [...],
   "pagination": {
     "currentPage": 2,
-    "from": 11,
-    "to": 20,
     "lastPage": 3,
     "perPage": 10,
     "total": 25

@@ -124,8 +124,6 @@ Both WorkOrders and Flights APIs implement consistent pagination:
   "data": [...],
   "pagination": {
     "currentPage": 1,
-    "from": 1,
-    "to": 10,
     "lastPage": 5,
     "perPage": 10,
     "total": 45

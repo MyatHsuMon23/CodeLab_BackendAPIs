@@ -6,8 +6,6 @@ namespace Flights_Work_Order_APIs.Models
     public class Pagination
     {
         public int CurrentPage { get; set; }
-        public int From { get; set; }
-        public int To { get; set; }
         public int LastPage { get; set; }
         public int PerPage { get; set; }
         public int Total { get; set; }

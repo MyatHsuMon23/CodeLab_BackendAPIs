@@ -65,8 +65,6 @@ namespace Flights_Work_Order_APIs.Controllers
                 // Calculate pagination values
                 var lastPage = (int)Math.Ceiling((double)total / perPage);
                 var skip = (page - 1) * perPage;
-                var from = total > 0 ? skip + 1 : 0;
-                var to = Math.Min(skip + perPage, total);
 
                 // Apply pagination
                 var workOrders = query.Skip(skip).Take(perPage).ToList();
@@ -75,8 +73,6 @@ namespace Flights_Work_Order_APIs.Controllers
                 var pagination = new Pagination
                 {
                     CurrentPage = page,
-                    From = from,
-                    To = to,
                     LastPage = lastPage,
                     PerPage = perPage,
                     Total = total
