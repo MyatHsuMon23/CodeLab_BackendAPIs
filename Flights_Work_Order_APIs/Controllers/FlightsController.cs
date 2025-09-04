@@ -31,6 +31,136 @@ namespace Flights_Work_Order_APIs.Controllers
         }
 
         /// <summary>
+        /// Get all flights with their associated work orders and command submissions
+        /// </summary>
+        [HttpGet("with-work-orders")]
+        public async Task<ActionResult<PaginatedApiResponse<IEnumerable<FlightWithWorkOrdersDto>>>> GetFlightsWithWorkOrders(
+            [FromQuery] string? flightNumber = null,
+            [FromQuery] string? sortBy = "FlightNumber",
+            [FromQuery] bool sortDescending = false,
+            [FromQuery] int page = 1,
+            [FromQuery] int perPage = 10)
+        {
+            try
+            {
+                // Validate pagination parameters
+                if (page < 1) page = 1;
+                if (perPage < 1) perPage = 10;
+                if (perPage > 100) perPage = 100; // Limit maximum page size
+
+                var query = _context.Flights
+                    .Include(f => f.WorkOrderSubmissions)
+                    .AsQueryable();
+
+                // Apply filtering
+                if (!string.IsNullOrEmpty(flightNumber))
+                {
+                    query = query.Where(f => f.FlightNumber.Contains(flightNumber));
+                }
+
+                // Apply sorting
+                switch (sortBy?.ToLower())
+                {
+                    case "flightnumber":
+                        query = sortDescending ? query.OrderByDescending(f => f.FlightNumber) : query.OrderBy(f => f.FlightNumber);
+                        break;
+                    case "scheduledarrivaltime":
+                    case "scheduledarrivaltimeutc":
+                        query = sortDescending ? query.OrderByDescending(f => f.ScheduledArrivalTimeUtc) : query.OrderBy(f => f.ScheduledArrivalTimeUtc);
+                        break;
+                    case "originairport":
+                        query = sortDescending ? query.OrderByDescending(f => f.OriginAirport) : query.OrderBy(f => f.OriginAirport);
+                        break;
+                    case "destinationairport":
+                        query = sortDescending ? query.OrderByDescending(f => f.DestinationAirport) : query.OrderBy(f => f.DestinationAirport);
+                        break;
+                    default:
+                        query = query.OrderBy(f => f.FlightNumber);
+                        break;
+                }
+
+                // Get total count before pagination
+                var total = await query.CountAsync();
+
+                // Calculate pagination values
+                var lastPage = (int)Math.Ceiling((double)total / perPage);
+                var skip = (page - 1) * perPage;
+
+                // Apply pagination and get flights with their relationships
+                var flights = await query.Skip(skip).Take(perPage).ToListAsync();
+
+                // Transform to DTOs with work orders and command submissions
+                var flightDtos = new List<FlightWithWorkOrdersDto>();
+
+                foreach (var flight in flights)
+                {
+                    // Get work orders for this flight (linked by flight number in task description)
+                    var workOrders = await _context.WorkOrders
+                        .Where(wo => wo.TaskDescription.Contains($"Flight {flight.FlightNumber}:"))
+                        .OrderByDescending(wo => wo.CreatedDate)
+                        .ToListAsync();
+
+                    var flightDto = new FlightWithWorkOrdersDto
+                    {
+                        Id = flight.Id,
+                        FlightNumber = flight.FlightNumber,
+                        ScheduledArrivalTimeUtc = flight.ScheduledArrivalTimeUtc,
+                        OriginAirport = flight.OriginAirport,
+                        DestinationAirport = flight.DestinationAirport,
+                        CreatedAt = flight.CreatedAt,
+                        WorkOrders = workOrders.Select(wo => new FlightWorkOrderDto
+                        {
+                            Id = wo.Id,
+                            WorkOrderNumber = wo.WorkOrderNumber,
+                            AircraftRegistration = wo.AircraftRegistration,
+                            TaskDescription = wo.TaskDescription,
+                            Status = wo.Status,
+                            Priority = wo.Priority,
+                            AssignedTechnician = wo.AssignedTechnician,
+                            CreatedDate = wo.CreatedDate,
+                            ScheduledDate = wo.ScheduledDate,
+                            CompletedDate = wo.CompletedDate,
+                            Notes = wo.Notes,
+                            CreatedBy = wo.CreatedBy
+                        }).ToList(),
+                        CommandSubmissions = flight.WorkOrderSubmissions.Select(s =>
+                        {
+                            var parsedCommands = JsonSerializer.Deserialize<List<FlightCommand>>(s.ParsedCommandsJson) ?? new List<FlightCommand>();
+                            return new WorkOrderSubmissionDto
+                            {
+                                Id = s.Id,
+                                CommandString = s.CommandString,
+                                ParsedCommands = parsedCommands,
+                                HumanReadableCommands = _commandService.ConvertToHumanReadable(parsedCommands),
+                                SubmittedAt = s.SubmittedAt,
+                                SubmittedBy = s.SubmittedBy,
+                                Notes = s.Notes
+                            };
+                        }).OrderByDescending(s => s.SubmittedAt).ToList()
+                    };
+
+                    flightDtos.Add(flightDto);
+                }
+
+                // Create pagination metadata
+                var pagination = new Pagination
+                {
+                    CurrentPage = page,
+                    LastPage = lastPage,
+                    PerPage = perPage,
+                    Total = total
+                };
+
+                return Ok(PaginatedApiResponse<IEnumerable<FlightWithWorkOrdersDto>>.CreateSuccess(flightDtos, pagination, "Flights with work orders retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving flights with work orders");
+                return StatusCode(500, PaginatedApiResponse<IEnumerable<FlightWithWorkOrdersDto>>.CreateError("Failed to retrieve flights with work orders"));
+            }
+        }
+
+        /// <summary>
         /// Get all flights with optional filtering, sorting and pagination
         /// </summary>
         [HttpGet]

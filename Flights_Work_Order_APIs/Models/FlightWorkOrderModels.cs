@@ -258,4 +258,38 @@ namespace Flights_Work_Order_APIs.Models
         public string SubmittedBy { get; set; } = string.Empty;
         public string? Notes { get; set; }
     }
+
+    /// <summary>
+    /// Flight work order DTO for clean frontend consumption
+    /// </summary>
+    public class FlightWorkOrderDto
+    {
+        public int Id { get; set; }
+        public string WorkOrderNumber { get; set; } = string.Empty;
+        public string AircraftRegistration { get; set; } = string.Empty;
+        public string TaskDescription { get; set; } = string.Empty;
+        public WorkOrderStatus Status { get; set; }
+        public WorkOrderPriority Priority { get; set; }
+        public string AssignedTechnician { get; set; } = string.Empty;
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ScheduledDate { get; set; }
+        public DateTime? CompletedDate { get; set; }
+        public string? Notes { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Comprehensive flight DTO that includes work orders and command submissions
+    /// </summary>
+    public class FlightWithWorkOrdersDto
+    {
+        public int Id { get; set; }
+        public string FlightNumber { get; set; } = string.Empty;
+        public DateTime ScheduledArrivalTimeUtc { get; set; }
+        public string OriginAirport { get; set; } = string.Empty;
+        public string DestinationAirport { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public List<FlightWorkOrderDto> WorkOrders { get; set; } = new List<FlightWorkOrderDto>();
+        public List<WorkOrderSubmissionDto> CommandSubmissions { get; set; } = new List<WorkOrderSubmissionDto>();
+    }
 }
