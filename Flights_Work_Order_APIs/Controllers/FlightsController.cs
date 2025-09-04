@@ -399,6 +399,55 @@ namespace Flights_Work_Order_APIs.Controllers
         }
 
         /// <summary>
+        /// Get work orders associated with a specific flight
+        /// </summary>
+        [HttpGet("{flightId}/work-orders")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<object>>>> GetFlightWorkOrders(int flightId)
+        {
+            try
+            {
+                // Verify flight exists
+                var flight = await _context.Flights.FindAsync(flightId);
+                if (flight == null)
+                {
+                    return NotFound(ApiResponse<IEnumerable<object>>.CreateError("Flight not found"));
+                }
+
+                // Get work orders associated with this flight
+                // Work orders are linked by having the flight number in the task description
+                var workOrders = await _context.WorkOrders
+                    .Where(wo => wo.TaskDescription.Contains($"Flight {flight.FlightNumber}:"))
+                    .OrderByDescending(wo => wo.CreatedDate)
+                    .ToListAsync();
+
+                var result = workOrders.Select(wo => new
+                {
+                    wo.Id,
+                    wo.WorkOrderNumber,
+                    wo.AircraftRegistration,
+                    wo.TaskDescription,
+                    wo.Status,
+                    wo.Priority,
+                    wo.AssignedTechnician,
+                    wo.CreatedDate,
+                    wo.ScheduledDate,
+                    wo.CompletedDate,
+                    wo.Notes,
+                    wo.CreatedBy,
+                    FlightId = flightId,
+                    FlightNumber = flight.FlightNumber
+                }).ToList();
+
+                return Ok(ApiResponse<IEnumerable<object>>.CreateSuccess(result, $"Work orders for flight {flight.FlightNumber} retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving work orders for flight {FlightId}", flightId);
+                return StatusCode(500, ApiResponse<IEnumerable<object>>.CreateError("Failed to retrieve work orders for flight"));
+            }
+        }
+
+        /// <summary>
         /// Create a work order for a specific flight
         /// </summary>
         [HttpPost("{flightId}/work-orders")]
