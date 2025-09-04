@@ -167,7 +167,38 @@ AA456,2024-12-01T16:00:00Z,ORD,MIA
 **Path Parameters:**
 - `flightId` (required): Flight ID
 
-### 7. Create Work Order for Flight
+### 7. Get Work Orders for Flight
+**Endpoint:** `GET /api/Flights/{flightId}/work-orders`
+
+**Description:** Retrieves all work orders associated with a specific flight.
+
+**Path Parameters:**
+- `flightId` (required): Flight ID
+
+**Response Format:**
+```json
+{
+  "success": true,
+  "message": "Work orders for flight UA123 retrieved successfully",
+  "data": [
+    {
+      "id": 123,
+      "workOrderNumber": "WO-20250104082244-456",
+      "aircraftRegistration": "N123AB",
+      "taskDescription": "Flight UA123: Engine maintenance",
+      "status": "Open",
+      "priority": "Medium",
+      "assignedTechnician": "John Smith",
+      "createdDate": "2025-01-04T08:22:44Z",
+      "scheduledDate": "2025-01-15T10:00:00Z",
+      "flightId": 1,
+      "flightNumber": "UA123"
+    }
+  ]
+}
+```
+
+### 8. Create Work Order for Flight
 **Endpoint:** `POST /api/Flights/{flightId}/work-orders`
 
 **Description:** Creates a work order linked to a specific flight.
@@ -184,6 +215,25 @@ AA456,2024-12-01T16:00:00Z,ORD,MIA
   "assignedTechnician": "John Smith",
   "scheduledDate": "2023-12-15T10:00:00Z",
   "notes": "Routine maintenance"
+}
+```
+
+**Response Format:**
+```json
+{
+  "success": true,
+  "message": "Work order created for flight successfully",
+  "data": {
+    "workOrderId": 123,
+    "workOrderNumber": "WO-20250104082244-456",
+    "flightId": 1,
+    "flightNumber": "UA123",
+    "taskDescription": "Flight UA123: Engine maintenance",
+    "priority": "Medium",
+    "status": "Open",
+    "createdBy": "maintenance_user",
+    "createdDate": "2025-01-04T08:22:44Z"
+  }
 }
 ```
 
