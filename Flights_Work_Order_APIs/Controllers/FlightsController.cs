@@ -109,7 +109,7 @@ namespace Flights_Work_Order_APIs.Controllers
         /// Get flight by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<Flight>>> GetFlight(int id)
+        public async Task<ActionResult<ApiResponse<FlightDetailDto>>> GetFlight(int id)
         {
             try
             {
@@ -119,15 +119,40 @@ namespace Flights_Work_Order_APIs.Controllers
 
                 if (flight == null)
                 {
-                    return NotFound(ApiResponse<Flight>.CreateError("Flight not found"));
+                    return NotFound(ApiResponse<FlightDetailDto>.CreateError("Flight not found"));
                 }
 
-                return Ok(ApiResponse<Flight>.CreateSuccess(flight, "Flight retrieved successfully"));
+                // Create comprehensive flight detail DTO
+                var flightDetail = new FlightDetailDto
+                {
+                    Id = flight.Id,
+                    FlightNumber = flight.FlightNumber,
+                    ScheduledArrivalTimeUtc = flight.ScheduledArrivalTimeUtc,
+                    OriginAirport = flight.OriginAirport,
+                    DestinationAirport = flight.DestinationAirport,
+                    CreatedAt = flight.CreatedAt,
+                    WorkOrderSubmissions = flight.WorkOrderSubmissions.Select(s =>
+                    {
+                        var parsedCommands = JsonSerializer.Deserialize<List<FlightCommand>>(s.ParsedCommandsJson) ?? new List<FlightCommand>();
+                        return new WorkOrderSubmissionDto
+                        {
+                            Id = s.Id,
+                            CommandString = s.CommandString,
+                            ParsedCommands = parsedCommands,
+                            HumanReadableCommands = _commandService.ConvertToHumanReadable(parsedCommands),
+                            SubmittedAt = s.SubmittedAt,
+                            SubmittedBy = s.SubmittedBy,
+                            Notes = s.Notes
+                        };
+                    }).OrderByDescending(s => s.SubmittedAt).ToList()
+                };
+
+                return Ok(ApiResponse<FlightDetailDto>.CreateSuccess(flightDetail, "Flight retrieved successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving flight {FlightId}", id);
-                return StatusCode(500, ApiResponse<Flight>.CreateError("Failed to retrieve flight"));
+                return StatusCode(500, ApiResponse<FlightDetailDto>.CreateError("Failed to retrieve flight"));
             }
         }
 
