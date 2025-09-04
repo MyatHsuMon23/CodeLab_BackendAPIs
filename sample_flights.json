@@ -1,32 +1,32 @@
 [
   {
-    "flightNumber": "AA123",
-    "scheduledArrivalTimeUtc": "2024-01-15T14:30:00Z",
-    "originAirport": "JFK",
-    "destinationAirport": "LAX"
+    "flightNumber": "QF7890",
+    "scheduledArrivalTimeUtc": "2025-09-05T08:15:00Z",
+    "originAirport": "SYD",
+    "destinationAirport": "SIN"
   },
   {
-    "flightNumber": "BA456",
-    "scheduledArrivalTimeUtc": "2024-01-15T16:45:00Z",
-    "originAirport": "LHR",
+    "flightNumber": "LH4567",
+    "scheduledArrivalTimeUtc": "2025-09-05T11:30:00Z",
+    "originAirport": "FRA",
     "destinationAirport": "JFK"
   },
   {
-    "flightNumber": "UA789",
-    "scheduledArrivalTimeUtc": "2024-01-15T18:20:00Z",
-    "originAirport": "SFO",
-    "destinationAirport": "ORD"
+    "flightNumber": "EK1234",
+    "scheduledArrivalTimeUtc": "2025-09-05T14:45:00Z",
+    "originAirport": "DXB",
+    "destinationAirport": "LHR"
   },
   {
-    "flightNumber": "DL101",
-    "scheduledArrivalTimeUtc": "2024-01-15T20:15:00Z",
-    "originAirport": "ATL",
-    "destinationAirport": "MIA"
+    "flightNumber": "AF5678",
+    "scheduledArrivalTimeUtc": "2025-09-05T17:20:00Z",
+    "originAirport": "CDG",
+    "destinationAirport": "NRT"
   },
   {
-    "flightNumber": "SW202",
-    "scheduledArrivalTimeUtc": "2024-01-15T22:30:00Z",
-    "originAirport": "DEN",
-    "destinationAirport": "PHX"
+    "flightNumber": "SQ4321",
+    "scheduledArrivalTimeUtc": "2025-09-05T20:05:00Z",
+    "originAirport": "SIN",
+    "destinationAirport": "SYD"
   }
 ]

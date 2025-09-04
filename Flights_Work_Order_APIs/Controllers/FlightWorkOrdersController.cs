@@ -24,10 +24,10 @@ namespace Flights_Work_Order_APIs.Controllers
             _logger = logger;
             
             // Initialize with sample data if empty
-            if (!_workOrders.Any())
-            {
-                InitializeSampleData();
-            }
+            //if (!_workOrders.Any())
+            //{
+            //    InitializeSampleData();
+            //}
         }
 
         /// <summary>
