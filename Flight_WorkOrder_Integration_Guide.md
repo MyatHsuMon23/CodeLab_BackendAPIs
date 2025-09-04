@@ -48,6 +48,47 @@ This guide explains the work order endpoints, their purpose, and how they integr
 POST /api/Flights/{flightId}/work-orders
 ```
 
+**Purpose**: Creates a new work order specifically associated with a flight.
+
+**Parameters**:
+- `flightId` (path): The ID of the flight
+
+**Request Body**:
+```json
+{
+  "aircraftRegistration": "N123AB",
+  "taskDescription": "Engine maintenance",
+  "priority": "Medium",
+  "assignedTechnician": "John Smith",
+  "scheduledDate": "2025-01-15T10:00:00Z",
+  "notes": "Routine maintenance required"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Work order created for flight successfully",
+  "data": {
+    "workOrderId": 123,
+    "workOrderNumber": "WO-20250104082244-456",
+    "flightId": 1,
+    "flightNumber": "UA123",
+    "taskDescription": "Flight UA123: Engine maintenance",
+    "priority": "Medium",
+    "status": "Open",
+    "createdBy": "maintenance_user",
+    "createdDate": "2025-01-04T08:22:44Z"
+  }
+}
+```
+
+#### 2. Get Work Orders for Flight
+```
+POST /api/Flights/{flightId}/work-orders
+```
+
 **Purpose**: Creates a maintenance work order linked to a specific flight.
 
 **Parameters**:
@@ -127,6 +168,78 @@ GET /api/Flights/{flightId}/commands
 
 **Purpose**: Retrieves command history for a flight (operational commands, not maintenance work orders).
 
+#### 4. Get All Flights with Work Orders and Commands
+```
+GET /api/Flights/with-work-orders?flightNumber=UA&page=1&perPage=10&sortBy=FlightNumber&sortDescending=false
+```
+
+**Purpose**: Retrieves a paginated list of all flights with their associated work orders and command submissions.
+
+**Parameters**:
+- `flightNumber` (query, optional): Filter flights by flight number (contains match)
+- `page` (query, optional): Page number for pagination (default: 1)
+- `perPage` (query, optional): Items per page (default: 10, max: 100)
+- `sortBy` (query, optional): Sort field - FlightNumber, ScheduledArrivalTime, OriginAirport, DestinationAirport (default: FlightNumber)
+- `sortDescending` (query, optional): Sort direction (default: false)
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Flights with work orders retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "flightNumber": "UA123",
+      "scheduledArrivalTimeUtc": "2025-01-15T14:30:00Z",
+      "originAirport": "JFK",
+      "destinationAirport": "LAX",
+      "createdAt": "2025-01-04T08:00:00Z",
+      "workOrders": [
+        {
+          "id": 123,
+          "workOrderNumber": "WO-20250104082244-456",
+          "aircraftRegistration": "N123AB",
+          "taskDescription": "Flight UA123: Engine maintenance",
+          "status": 0,
+          "priority": 2,
+          "assignedTechnician": "John Smith",
+          "createdDate": "2025-01-04T08:22:44Z",
+          "scheduledDate": "2025-01-15T10:00:00Z",
+          "completedDate": null,
+          "notes": "Created for flight UA123. Routine maintenance",
+          "createdBy": "maintenance_user"
+        }
+      ],
+      "commandSubmissions": [
+        {
+          "id": 1,
+          "commandString": "CHECK_ENGINE,INSPECT_LANDING_GEAR",
+          "parsedCommands": [
+            {
+              "type": "CHECK_ENGINE",
+              "value": "",
+              "displayText": "Check Engine",
+              "isValid": true
+            }
+          ],
+          "humanReadableCommands": "Check Engine, Inspect Landing Gear",
+          "submittedAt": "2025-01-04T08:22:44Z",
+          "submittedBy": "maintenance_user",
+          "notes": "Pre-flight inspection commands"
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "lastPage": 1,
+    "perPage": 10,
+    "total": 1
+  }
+}
+```
+
 ### Standalone Work Order Endpoints
 
 #### 1. Get All Work Orders
@@ -157,6 +270,13 @@ GET /api/WorkOrders/statistics
 2. **Create Flight Work Order**: Use flight-specific endpoint to create work order
 3. **Track Progress**: Use standalone work order endpoints to manage the work
 4. **Retrieve by Flight**: Use flight work order retrieval to see all maintenance for that flight
+
+### Scenario 2: Comprehensive Fleet Management
+
+1. **Overview**: Get all flights with their maintenance status
+2. **Use**: `GET /api/Flights/with-work-orders` to see comprehensive view
+3. **Filter**: Use query parameters to focus on specific flights or areas
+4. **Monitor**: Track work orders and command submissions across the fleet
 
 #### Step-by-Step Example:
 
