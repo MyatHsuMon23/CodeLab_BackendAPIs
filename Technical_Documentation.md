@@ -1,202 +1,181 @@
-# Comprehensive API Technical Documentation
+# Flight Work Order Backend APIs - Technical Documentation
 
-## System Overview
-
-The Flight Work Order Backend APIs provide a complete solution for managing flight operations, work orders, and maintenance tasks in aviation systems. The system consists of multiple interconnected APIs that work together to provide comprehensive flight and maintenance management capabilities.
-
-## Architecture Overview
-
-### System Components
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Client Apps   │    │   Web Browser   │    │  Mobile Apps    │
-└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
-          │                      │                      │
-          └──────────────────────┼──────────────────────┘
-                                 │
-                    ┌─────────────▼─────────────┐
-                    │      API Gateway         │
-                    │   (JWT Authentication)   │
-                    └─────────────┬─────────────┘
-                                 │
-          ┌──────────────────────┼──────────────────────┐
-          │                      │                      │
-  ┌───────▼───────┐    ┌─────────▼─────────┐    ┌──────▼──────┐
-  │ WorkOrders API │    │   Flights API    │    │   Auth API  │
-  │   Controller   │    │   Controller     │    │ Controller  │
-  └───────┬───────┘    └─────────┬─────────┘    └──────┬──────┘
-          │                      │                      │
-          └──────────────────────┼──────────────────────┘
-                                 │
-                    ┌─────────────▼─────────────┐
-                    │    Data Layer            │
-                    │ (Entity Framework Core)  │
-                    └─────────────┬─────────────┘
-                                 │
-                    ┌─────────────▼─────────────┐
-                    │    Database              │
-                    │   (SQL Server)           │
-                    └─────────────────────────────┘
-```
+## System Architecture Overview
 
 ### Technology Stack
 - **Framework**: ASP.NET Core 8.0
-- **Authentication**: JWT Bearer Tokens
-- **ORM**: Entity Framework Core
-- **Database**: SQL Server with automatic migrations
+- **Database**: SQLite with Entity Framework Core
+- **Authentication**: JWT (JSON Web Tokens)
 - **API Documentation**: Swagger/OpenAPI
-- **Logging**: Built-in ASP.NET Core logging
-- **Validation**: Data Annotations and FluentValidation
+- **Development Environment**: Visual Studio 2022/.NET CLI
 
-## API Ecosystem
+### System Components
 
-### 1. Authentication API (`/api/Auth`)
-**Purpose**: User authentication and token management
-**Key Features**:
-- JWT token generation and validation
-- Password encryption/decryption
-- Role-based authentication
-- Security helper endpoints (development)
+#### 1. Controllers Layer
+- **AuthController**: Handles user authentication and JWT token management
+- **FlightsController**: Manages flight data, imports, and operational commands
+- **FlightWorkOrdersController**: Manages work orders for aircraft maintenance
+- **WeatherForecastController**: Demo endpoint for API patterns
 
-**Primary Workflows**:
-- User login and token issuance
-- Password encryption for secure storage
-- Token validation for all protected endpoints
+#### 2. Services Layer
+- **UserService**: User management and authentication logic
+- **JwtService**: JWT token generation and validation
+- **EncryptionService**: Password encryption and decryption
+- **FlightCommandService**: Flight command processing and validation
 
-### 2. Work Orders API (`/api/WorkOrders`)
-**Purpose**: Aircraft maintenance work order management
-**Key Features**:
-- Complete CRUD operations for work orders
-- Work order lifecycle management (Open → InProgress → Completed)
-- Priority-based task management
-- Technician assignment and tracking
-- Statistics and reporting
+#### 3. Data Layer
+- **FlightDbContext**: Entity Framework database context
+- **Models**: Data transfer objects and entity models
+- **SQLite Database**: Local database file (flights.db)
 
-**Primary Workflows**:
-- Work order creation and assignment
-- Status progression through lifecycle states
-- Filtering and pagination for large datasets
-- Integration with flight maintenance requirements
+#### 4. Security Features
+- **JWT Authentication**: Stateless token-based authentication
+- **Password Encryption**: Two-way encryption for password security
+- **CORS Configuration**: Cross-origin request handling
+- **Role-based Authorization**: User role management
 
-### 3. Flights API (`/api/Flights`)
-**Purpose**: Flight data management and operations
-**Key Features**:
-- Flight information CRUD operations
-- Bulk import capabilities (CSV/JSON)
-- Flight command management
-- Advanced filtering and sorting
-- Pagination for large datasets
-
-**Primary Workflows**:
-- Flight data import from external systems
-- Flight information retrieval and management
-- Command processing for flight operations
-- Integration with work order systems
-
-### 4. Weather Forecast API (`/api/WeatherForecast`)
-**Purpose**: Demo/sample API endpoint
-**Key Features**:
-- Sample weather data generation
-- Demonstrates API response patterns
-- Authentication requirement example
-
-## Cross-Cutting Concerns
-
-### 1. Authentication & Authorization
-All APIs (except Auth login) require JWT authentication:
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-**Security Flow**:
-1. Client authenticates via `/api/Auth/login`
-2. Server returns JWT access token
-3. Client includes token in subsequent requests
-4. Server validates token on each request
-5. Request proceeds if token is valid
-
-### 2. Pagination Pattern
-Both WorkOrders and Flights APIs implement consistent pagination:
-```json
-{
-  "success": true,
-  "message": "Data retrieved successfully",
-  "data": [...],
-  "pagination": {
-    "currentPage": 1,
-    "lastPage": 5,
-    "perPage": 10,
-    "total": 45
-  }
-}
-```
-
-### 3. Response Format Standardization
-All APIs follow consistent response format:
-```json
-{
-  "success": boolean,
-  "message": "string",
-  "data": object_or_array,
-  "pagination": object // (only for paginated endpoints)
-}
-```
-
-### 4. Error Handling
-Standardized HTTP status codes and error responses:
-- `200 OK`: Successful operations
-- `201 Created`: Resource created successfully
-- `400 Bad Request`: Invalid input data
-- `401 Unauthorized`: Authentication required
-- `403 Forbidden`: Insufficient permissions
-- `404 Not Found`: Resource not found
-- `500 Internal Server Error`: Server-side errors
-
-## Data Flow Patterns
-
-### 1. Work Order → Flight Integration
-```
-Flight Arrives → Maintenance Required → Work Order Created → 
-Technician Assigned → Work Performed → Work Order Completed → 
-Flight Cleared for Departure
-```
-
-### 2. Bulk Data Import Flow
-```
-External System → CSV/JSON Export → API Import Endpoint → 
-Data Validation → Database Storage → Import Summary Report
-```
-
-### 3. Command Processing Flow
-```
-External Command → Validation Endpoint → Command Queue → 
-Flight Update → Response Confirmation → Audit Log
-```
-
-## Database Schema Overview
+## Database Schema
 
 ### Core Entities
-1. **Users**: Authentication and user management
-2. **Flights**: Flight information and scheduling
-3. **WorkOrders**: Maintenance tasks and tracking
-4. **FlightCommands**: Operational commands for flights
 
-### Relationships
-- Users ↔ WorkOrders (Creator, Assigned Technician)
-- Flights ↔ WorkOrders (Maintenance requirements)
-- Flights ↔ FlightCommands (Operational changes)
+#### Users Table
+```sql
+Users (
+    Id (Primary Key),
+    Username (Unique),
+    PasswordHash (Encrypted),
+    Role,
+    CreatedDate,
+    LastLoginDate
+)
+```
+
+#### Flights Table
+```sql
+Flights (
+    Id (Primary Key),
+    FlightNumber,
+    AircraftRegistration,
+    DepartureAirport,
+    ArrivalAirport,
+    DepartureTime,
+    ArrivalTime,
+    Status,
+    CreatedDate,
+    UpdatedDate
+)
+```
+
+#### WorkOrders Table
+```sql
+WorkOrders (
+    Id (Primary Key),
+    WorkOrderNumber (Generated),
+    AircraftRegistration,
+    TaskDescription,
+    Status (Open/InProgress/Completed/OnHold/Cancelled),
+    Priority (Critical/High/Medium/Low),
+    AssignedTechnician,
+    CreatedBy,
+    CreatedDate,
+    ScheduledDate,
+    CompletedDate,
+    Notes
+)
+```
+
+#### FlightCommands Table
+```sql
+FlightCommands (
+    Id (Primary Key),
+    FlightId (Foreign Key),
+    CommandType,
+    CommandData,
+    SubmittedBy,
+    SubmittedDate,
+    Status
+)
+```
+
+### Entity Relationships
+- **One-to-Many**: Flights → FlightCommands
+- **Many-to-Many**: Flights ↔ WorkOrders (through aircraft registration)
+- **One-to-Many**: Users → WorkOrders (creator/assignee)
+
+## API Architecture
+
+### Authentication Flow
+```
+1. POST /api/Auth/login
+   ↓
+2. JWT Token Generated
+   ↓
+3. Bearer Token in Authorization Header
+   ↓
+4. Token Validation on Each Request
+   ↓
+5. Access Granted/Denied
+```
+
+### Request/Response Pipeline
+```
+HTTP Request
+    ↓
+CORS Middleware
+    ↓
+Authentication Middleware
+    ↓
+Authorization Middleware
+    ↓
+Controller Action
+    ↓
+Service Layer
+    ↓
+Entity Framework
+    ↓
+SQLite Database
+    ↓
+Response Serialization
+    ↓
+HTTP Response
+```
+
+### Response Format Standard
+All APIs follow a consistent response wrapper:
+
+```csharp
+public class ApiResponse<T>
+{
+    public bool Success { get; set; }
+    public string Message { get; set; }
+    public T Data { get; set; }
+}
+
+public class PaginatedApiResponse<T> : ApiResponse<T>
+{
+    public Pagination Pagination { get; set; }
+}
+
+public class Pagination
+{
+    public int CurrentPage { get; set; }
+    public int LastPage { get; set; }
+    public int PerPage { get; set; }
+    public int Total { get; set; }
+}
+```
 
 ## Configuration Management
 
-### Application Settings
+### Application Settings Structure
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=...;Database=...;..."
+    "DefaultConnection": "Data Source=flights.db"
   },
-  "JwtSettings": {
-    "SecretKey": "your-secret-key",
-    "Issuer": "FlightWorkOrderSystem",
+  "Jwt": {
+    "SecretKey": "Flight_Work_Order_Secret_Key_For_JWT_Token_Generation_2024",
+    "Issuer": "FlightWorkOrderAPI",
     "Audience": "FlightWorkOrderClient",
     "ExpirationMinutes": 60
   },
@@ -209,147 +188,207 @@ Flight Update → Response Confirmation → Audit Log
 }
 ```
 
-### Environment-Specific Configuration
-- **Development**: Full logging, helper endpoints enabled
-- **Staging**: Reduced logging, helper endpoints disabled
-- **Production**: Minimal logging, security hardened
+### Environment Configuration
+- **Development**: Swagger UI enabled, detailed error messages
+- **Production**: Swagger UI disabled, minimal error exposure
+- **Database**: SQLite for development, can be configured for SQL Server/PostgreSQL
+
+## Security Implementation
+
+### JWT Token Configuration
+- **Algorithm**: HMAC SHA-256
+- **Validation Parameters**:
+  - ValidateIssuerSigningKey: true
+  - ValidateIssuer: true
+  - ValidateAudience: true
+  - ValidateLifetime: true
+  - ClockSkew: Zero tolerance
+
+### Password Security
+- **Encryption**: Two-way encryption using EncryptionService
+- **Storage**: Encrypted passwords in database
+- **Validation**: Decrypt and compare during authentication
+
+### Authorization Attributes
+```csharp
+[Authorize] // Requires valid JWT token
+[Route("api/[controller]")]
+[ApiController]
+```
 
 ## Performance Considerations
 
-### 1. Database Optimization
-- **Indexing**: Optimized indexes on frequently queried fields
-- **Connection Pooling**: Entity Framework connection management
-- **Query Optimization**: Efficient LINQ queries with proper filtering
+### Database Optimization
+- **Async Operations**: All database calls use async/await
+- **Entity Framework**: Optimized queries with proper includes
+- **Pagination**: Efficient data retrieval for large datasets
+- **Connection Pooling**: Automatic connection management
 
-### 2. API Performance
-- **Pagination**: Prevents large result set performance issues
-- **Filtering**: Reduces data transfer and processing
-- **Caching**: Response caching where appropriate
-- **Async Operations**: Non-blocking I/O operations
+### Memory Management
+- **Dependency Injection**: Proper service lifetime management
+- **Disposal Pattern**: Automatic resource cleanup
+- **JSON Serialization**: Optimized with ReferenceHandler.IgnoreCycles
 
-### 3. Scalability Patterns
-- **Stateless Design**: No server-side session state
-- **Database Scaling**: Prepared for read replicas
-- **Microservice Ready**: Loosely coupled API design
+### Scalability Features
+- **Stateless Authentication**: JWT tokens enable horizontal scaling
+- **CORS Support**: Multi-client application support
+- **API Versioning Ready**: URL-based versioning support
+- **Microservice Architecture**: Service layer separation
 
-## Security Best Practices
+## Error Handling Strategy
 
-### 1. Authentication Security
-- JWT tokens with expiration
-- Strong secret key for token signing
-- Password encryption (not hashing for demo purposes)
-- Role-based authorization
+### Exception Management
+```csharp
+try
+{
+    // Business logic
+    return Ok(ApiResponse<T>.CreateSuccess(data, message));
+}
+catch (UnauthorizedAccessException ex)
+{
+    return Unauthorized(ApiResponse.CreateError(ex.Message));
+}
+catch (ValidationException ex)
+{
+    return BadRequest(ApiResponse.CreateError(ex.Message));
+}
+catch (Exception ex)
+{
+    _logger.LogError(ex, "Unexpected error occurred");
+    return StatusCode(500, ApiResponse.CreateError("Internal server error"));
+}
+```
 
-### 2. API Security
-- HTTPS enforcement in production
-- Input validation on all endpoints
-- SQL injection prevention via Entity Framework
-- Rate limiting (can be added via middleware)
-
-### 3. Data Protection
-- Sensitive data encryption
-- Audit logging for important operations
-- Error message sanitization
-- Secure configuration management
-
-## Monitoring and Observability
-
-### 1. Logging Strategy
-- **Structured Logging**: JSON formatted logs
-- **Log Levels**: Appropriate levels for different environments
-- **Request Tracking**: Correlation IDs for request tracing
-- **Error Logging**: Detailed error information for debugging
-
-### 2. Health Checks
-- Database connectivity checks
-- External service dependency checks
-- Application health endpoints
-- Performance metrics collection
-
-### 3. Metrics and Monitoring
-- API response times
-- Request volumes and patterns
-- Error rates and types
-- Database performance metrics
-
-## Development Guidelines
-
-### 1. Code Organization
-- **Controllers**: Thin controllers, delegate to services
-- **Services**: Business logic implementation
-- **Models**: Data transfer objects and entities
-- **Data**: Entity Framework context and configurations
-
-### 2. Testing Strategy
-- **Unit Tests**: Service layer and business logic
-- **Integration Tests**: API endpoint testing
-- **Database Tests**: Entity Framework operations
-- **Authentication Tests**: JWT token validation
-
-### 3. API Versioning
-- URL-based versioning preparation
-- Backward compatibility maintenance
-- Deprecation strategy for old endpoints
-- Client migration support
+### HTTP Status Code Standards
+- **200 OK**: Successful GET, PUT operations
+- **201 Created**: Successful POST operations
+- **400 Bad Request**: Validation errors, malformed requests
+- **401 Unauthorized**: Missing or invalid authentication
+- **403 Forbidden**: Insufficient permissions
+- **404 Not Found**: Resource not found
+- **500 Internal Server Error**: Unexpected server errors
 
 ## Deployment Architecture
 
-### 1. Development Environment
+### Development Environment
 ```
-Developer Machine → Local IIS Express → LocalDB/SQL Express
-```
-
-### 2. Production Environment
-```
-Load Balancer → API Servers (Multiple Instances) → 
-SQL Server Cluster → Monitoring & Logging Services
+Local Machine
+├── .NET 8.0 SDK
+├── SQLite Database (flights.db)
+├── Visual Studio 2022/VS Code
+└── Swagger UI (https://localhost:7159/swagger)
 ```
 
-### 3. CI/CD Pipeline
-1. **Source Control**: Git-based version control
-2. **Build**: Automated compilation and testing
-3. **Testing**: Automated test suite execution
-4. **Deployment**: Automated deployment to environments
-5. **Monitoring**: Post-deployment health checks
+### Production Considerations
+```
+Production Server
+├── IIS/Kestrel Web Server
+├── SQL Server/PostgreSQL Database
+├── HTTPS Certificate
+├── Application Insights/Logging
+├── Load Balancer (if scaled)
+└── Reverse Proxy (nginx/IIS)
+```
 
-## Integration Patterns
+### Build and Deployment Pipeline
+```
+Source Control (Git)
+    ↓
+Build Pipeline (.NET CLI)
+    ↓
+Unit Tests (if available)
+    ↓
+Package Creation
+    ↓
+Deployment to Target Environment
+    ↓
+Database Migration
+    ↓
+Health Check Validation
+```
 
-### 1. External System Integration
-- **File Import**: CSV/JSON bulk data import
-- **API Integration**: RESTful API consumption
-- **Message Queues**: Asynchronous processing
-- **Event-Driven**: Domain events for system integration
+## Monitoring and Logging
 
-### 2. Client Integration
-- **Web Applications**: Browser-based interfaces
-- **Mobile Applications**: Native and hybrid apps
-- **Desktop Applications**: Rich client applications
-- **Third-Party Systems**: API consumers
+### Built-in Logging
+- **Microsoft.Extensions.Logging**: Integrated logging framework
+- **Log Levels**: Information, Warning, Error, Critical
+- **Structured Logging**: JSON-formatted log entries
 
-## Troubleshooting Guide
+### Health Monitoring
+- **Startup Validation**: Database connection verification
+- **Middleware Pipeline**: Request/response logging
+- **Exception Tracking**: Automatic error capture and logging
 
-### Common Issues
-1. **Authentication Failures**: Check JWT configuration
-2. **Database Connection**: Verify connection strings
-3. **Import Errors**: Validate file formats
-4. **Performance Issues**: Check pagination usage
+### Performance Metrics
+- **Response Times**: Built-in ASP.NET Core metrics
+- **Memory Usage**: .NET runtime monitoring
+- **Database Performance**: Entity Framework query logging
 
-### Diagnostic Tools
-- **Swagger UI**: API testing and documentation
-- **Logging**: Detailed error information
-- **Database Tools**: SQL Server Management Studio
-- **Network Tools**: Postman, curl for API testing
+## Testing Strategy
 
-## Future Enhancements
+### Unit Testing Framework
+```csharp
+// Example test structure (framework ready)
+[TestClass]
+public class AuthControllerTests
+{
+    [TestMethod]
+    public async Task Login_ValidCredentials_ReturnsJwtToken()
+    {
+        // Arrange, Act, Assert
+    }
+}
+```
 
-### Planned Features
-1. **Real-time Updates**: SignalR for live data
-2. **Advanced Search**: Full-text search capabilities
-3. **Report Generation**: PDF/Excel report exports
-4. **Mobile API**: Optimized endpoints for mobile
+### Integration Testing
+- **API Endpoint Testing**: Full request/response cycle
+- **Database Integration**: Entity Framework operations
+- **Authentication Flow**: JWT token lifecycle
 
-### Scalability Roadmap
-1. **Microservices**: Service decomposition
-2. **Message Queues**: Asynchronous processing
-3. **Caching Layer**: Redis for performance
-4. **API Gateway**: Centralized API management
+### Testing Tools
+- **Swagger UI**: Manual API testing interface
+- **Postman**: API collection testing
+- **Unit Test Framework**: MSTest/xUnit ready
+- **Sample Data**: CSV/JSON files for import testing
+
+## Future Enhancement Opportunities
+
+### Scalability Improvements
+- **Caching Layer**: Redis/In-Memory caching
+- **Message Queues**: Background job processing
+- **Database Sharding**: Multi-tenant architecture
+- **CDN Integration**: Static content delivery
+
+### Feature Enhancements
+- **Real-time Updates**: SignalR integration
+- **File Storage**: Azure Blob/AWS S3 integration
+- **Email Notifications**: SMTP/SendGrid integration
+- **Audit Logging**: Comprehensive change tracking
+
+### Security Enhancements
+- **Rate Limiting**: API throttling implementation
+- **OAuth 2.0**: Third-party authentication providers
+- **Data Encryption**: Column-level encryption
+- **API Gateway**: Centralized security and routing
+
+## Development Guidelines
+
+### Code Standards
+- **C# Conventions**: Microsoft coding standards
+- **Async/Await**: Consistent asynchronous programming
+- **Dependency Injection**: Constructor injection pattern
+- **Error Handling**: Consistent exception management
+
+### API Design Principles
+- **RESTful Design**: HTTP verb conventions
+- **Resource Naming**: Plural nouns for collections
+- **Versioning Strategy**: URL-based versioning
+- **Documentation**: Comprehensive XML comments
+
+### Database Design Principles
+- **Normalization**: Proper table relationships
+- **Indexing Strategy**: Performance optimization
+- **Migration Management**: Code-first approach
+- **Data Integrity**: Constraint enforcement
+
+This technical documentation provides a comprehensive overview of the Flight Work Order Backend APIs system architecture, implementation details, and operational considerations.
