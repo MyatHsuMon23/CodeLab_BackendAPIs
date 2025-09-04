@@ -230,4 +230,32 @@ namespace Flights_Work_Order_APIs.Models
         [MaxLength(1000)]
         public string? Notes { get; set; }
     }
+
+    /// <summary>
+    /// Flight detail DTO for comprehensive flight information
+    /// </summary>
+    public class FlightDetailDto
+    {
+        public int Id { get; set; }
+        public string FlightNumber { get; set; } = string.Empty;
+        public DateTime ScheduledArrivalTimeUtc { get; set; }
+        public string OriginAirport { get; set; } = string.Empty;
+        public string DestinationAirport { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public List<WorkOrderSubmissionDto> WorkOrderSubmissions { get; set; } = new List<WorkOrderSubmissionDto>();
+    }
+
+    /// <summary>
+    /// Work order submission DTO for clean frontend consumption
+    /// </summary>
+    public class WorkOrderSubmissionDto
+    {
+        public int Id { get; set; }
+        public string CommandString { get; set; } = string.Empty;
+        public List<FlightCommand> ParsedCommands { get; set; } = new List<FlightCommand>();
+        public string HumanReadableCommands { get; set; } = string.Empty;
+        public DateTime SubmittedAt { get; set; }
+        public string SubmittedBy { get; set; } = string.Empty;
+        public string? Notes { get; set; }
+    }
 }

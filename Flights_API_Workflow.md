@@ -46,7 +46,7 @@ The Flights API (`/api/Flights`) provides comprehensive flight management capabi
 ### 2. Get Flight by ID
 **Endpoint:** `GET /api/Flights/{id}`
 
-**Description:** Retrieves a specific flight by its unique ID.
+**Description:** Retrieves a specific flight by its unique ID with comprehensive work order submissions.
 
 **Path Parameters:**
 - `id` (required): Flight ID
@@ -61,7 +61,32 @@ The Flights API (`/api/Flights`) provides comprehensive flight management capabi
     "flightNumber": "UA123",
     "scheduledArrivalTimeUtc": "2024-12-01T15:30:00Z",
     "originAirport": "LAX",
-    "destinationAirport": "JFK"
+    "destinationAirport": "JFK",
+    "createdAt": "2024-12-01T10:00:00Z",
+    "workOrderSubmissions": [
+      {
+        "id": 1,
+        "commandString": "CHK30|GTG5",
+        "parsedCommands": [
+          {
+            "type": "CHK",
+            "value": "30",
+            "displayText": "Check-in: 30 minutes",
+            "isValid": true
+          },
+          {
+            "type": "GTG",
+            "value": "5",
+            "displayText": "Gate assignment: Gate 5",
+            "isValid": true
+          }
+        ],
+        "humanReadableCommands": "Check-in: 30 minutes, Gate assignment: Gate 5",
+        "submittedAt": "2024-12-01T14:00:00Z",
+        "submittedBy": "operator123",
+        "notes": "Standard pre-flight commands"
+      }
+    ]
   }
 }
 ```
